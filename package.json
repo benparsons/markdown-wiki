@@ -1,0 +1,24 @@
+{
+  "name": "markdown-wiki",
+  "version": "0.0.1",
+  "description": "Idea to generate a wiki using markdown-it",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benparsons/markdown-wiki.git"
+  },
+  "author": "benparsons",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/benparsons/markdown-wiki/issues"
+  },
+  "homepage": "https://github.com/benparsons/markdown-wiki#readme",
+  "dependencies": {
+    "js-yaml": "^3.12.0",
+    "markdown-it": "^8.4.2",
+    "markdown-it-front-matter": "^0.1.2"
+  }
+}
