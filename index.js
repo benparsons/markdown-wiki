@@ -30,6 +30,7 @@ var pages = [];
 
 function loadPages() {
   var res = walk(".");
+  pages = [];
   res.forEach((file) => {
     page = {};
     
