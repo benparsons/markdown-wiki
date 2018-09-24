@@ -27,9 +27,12 @@ var walk = function(dir) {
 
 var page = {};
 var pages = [];
+var projects = {};
 
-function loadPages() {
-  var res = walk(".");
+function loadPages(path) {
+
+  if (! path) path = ".";
+  var res = walk(path);
   pages = [];
   res.forEach((file) => {
     page = {};
@@ -111,13 +114,38 @@ function loadTags() {
   console.log(tags);
 }
 
+function loadProjects() {
+  if (! pages || pages.length === 0) {
+    console.log("Pages not loaded.");
+    return;
+  }
+
+  pages.forEach(page => {
+    if (page.fm && page.fm.project) {
+      if (! projects[page.fm.project]) { 
+        projects[page.fm.project] = [];
+      }
+      projects[page.fm.project].push(page);
+    }
+  });
+}
+
 function getPages() {
   return pages;
+}
+
+function getWiki() {
+  return {
+    pages: pages,
+    projects: projects
+  };
 }
 
 module.exports = {
   loadPages: loadPages,
   renderPages: renderPages,
   loadTags: loadTags,
-  getPages: getPages
+  getPages: getPages,
+  loadProjects: loadProjects,
+  getWiki, getWiki
 };
