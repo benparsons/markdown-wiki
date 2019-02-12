@@ -3,6 +3,9 @@ md.use(require('markdown-it-front-matter'), function(fm) {
     var parsedYaml = yaml.safeLoad(fm);
     page.fm = parsedYaml;
   });
+md.use(require('markdown-it-missing-refs'), function(missing) {
+    page.missing = missing;
+  });
 var fs = require('fs');
 var yaml = require('js-yaml');
 
@@ -28,6 +31,7 @@ var walk = function(dir) {
 var page = {};
 var pages = [];
 var projects = {};
+var tags = {};
 
 function loadPages(path) {
 
@@ -43,14 +47,16 @@ function loadPages(path) {
     var parsedMd = md.parse(text, {});
     page.tokens = parsedMd;
     
+    page.path = file;
     file = file.split('/');
-    if (file.length === 3) {
-      page.name = file[2].replace('.md', '');
-      page.category = file[1];
-    }
-    else if (file.length === 2) {
-      page.name = file[1].replace('.md', '');
-    }
+    page.name = file[file.length - 1].replace('.md', '');
+    // if (file.length === 3) {
+    //   page.name = file[2].replace('.md', '');
+    //   page.category = file[1];
+    // }
+    // else if (file.length === 2) {
+    //   page.name = file[1].replace('.md', '');
+    // }
     pages.push(page);
   });
   
@@ -98,23 +104,24 @@ function renderPages() {
 
 function loadTags() {
   // create tags array
-  var tags = [];
   pages.forEach(page => {
     if (page.fm && page.fm.tags) {
       page.fm.tags.forEach(pageTag => {
-        var tag = tags.find(t => t.tag === pageTag);
-        if (! tag) {
-          tag = {tag: pageTag, pages: []};
-          tags.push(tag);
+        if (! tags[pageTag]) {
+          tags[pageTag] = [];
         }
-        tag.pages.push(page);
+        tags[pageTag].push({
+          name: page.name,
+          title: page.title
+        });
       });
     }
   });
-  console.log(tags);
 }
 
 function loadProjects() {
+  projects = {};
+
   if (! pages || pages.length === 0) {
     console.log("Pages not loaded.");
     return;
@@ -122,10 +129,16 @@ function loadProjects() {
 
   pages.forEach(page => {
     if (page.fm && page.fm.project) {
+      if (! page.fm.task.status) return;
+      if (page.fm.task.status.toLowerCase() === "done" ) return;
       if (! projects[page.fm.project]) { 
         projects[page.fm.project] = [];
       }
-      projects[page.fm.project].push(page);
+      projects[page.fm.project].push({
+        name: page.name,
+        title: page.title,
+        category: page.category
+      });
     }
   });
 }
@@ -137,7 +150,8 @@ function getPages() {
 function getWiki() {
   return {
     pages: pages,
-    projects: projects
+    projects: projects,
+    tags: tags
   };
 }
 
