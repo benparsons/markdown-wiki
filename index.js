@@ -156,11 +156,22 @@ function getWiki() {
   };
 }
 
+function writeFrontMatter(name, json) {
+  var entry = pages.find(x => x.name === name);
+  var frontMatter = yaml.dump(json, {noArrayIndent: true});
+  frontMatter = frontMatter.replace(/(date: \d\d\d\d-\d\d-\d\d).*/, "$1");
+  console.log(frontMatter);
+  var output = entry.raw.replace(/---(.|[\r\n])*---/, `---\n${frontMatter}---`);
+  process.chdir(__dirname + "/../..");
+  fs.writeFileSync(entry.path, output);
+}
+
 module.exports = {
   loadPages: loadPages,
   renderPages: renderPages,
   loadTags: loadTags,
   getPages: getPages,
   loadProjects: loadProjects,
-  getWiki, getWiki
+  getWiki, getWiki,
+  writeFrontMatter: writeFrontMatter
 };
