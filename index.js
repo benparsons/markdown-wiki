@@ -73,6 +73,7 @@ function loadPages(path) {
   // use url directory to re-parse
   pages.forEach((page, i, array) => {
     array[i].tokens = md.parse(page.raw + urlDirectory, {});
+    array[i].html = md.renderer.render(array[i].tokens, {})
   });
 
   // populate title from h1, TODO make optional
