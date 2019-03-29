@@ -60,22 +60,29 @@ function loadPages(path) {
     pages.push(page);
   });
   
-  var urlDirectory = "\n\n";
+  var urlDirectory = [];
   // make url directory
   pages.forEach(page => {
-    urlDirectory += `[${page.name}]: ${page.name}.html\n`;
+    urlDirectory.push(`[${page.name}]: ${page.name}.html`);
     if (page.fm) {
-      if (page.fm.title) urlDirectory += `[${page.fm.title}]: ${page.name}.html\n`;
-      if (page.fm.name) urlDirectory += `[${page.fm.name}]: ${page.name}.html\n`;
+      if (page.fm.title) urlDirectory.push(`[${page.fm.title}]: ${page.name}.html\n`);
+      if (page.fm.name) urlDirectory.push(`[${page.fm.name}]: ${page.name}.html\n`);
     }
   });
-  
+
   // use url directory to re-parse
   pages.forEach((page, i, array) => {
-    array[i].tokens = md.parse(page.raw + urlDirectory, {});
+    var pageDirectory = `\n\n`;
+    if (page.missing) {
+      page.missing.forEach(missing => {
+        pageDirectory += urlDirectory.filter(ud => ud.indexOf(missing) !== -1).join(`\n`);
+        if (pageDirectory[pageDirectory.length-1] !== `\n`) pageDirectory += `\n`;
+      });
+    }
+    array[i].tokens = md.parse(page.raw + pageDirectory, {});
     array[i].html = md.renderer.render(array[i].tokens, {})
   });
-
+  
   // populate title from h1, TODO make optional
   pages.forEach((page) => {
     if (page.title) return;
