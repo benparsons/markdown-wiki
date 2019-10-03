@@ -79,6 +79,9 @@ function loadPages(path) {
   var urlDirectory = [];
   // make url directory
   pages.forEach(page => {
+    if (page.fm && page.fm.redirect) {
+      return;
+    }
     urlDirectory.push(`[${page.name}]: ${page.name}.html`);
     if (page.fm) {
       if (page.title &&
