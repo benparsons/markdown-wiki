@@ -81,7 +81,10 @@ function loadPages(path) {
   pages.forEach(page => {
     urlDirectory.push(`[${page.name}]: ${page.name}.html`);
     if (page.fm) {
-      if (page.title) urlDirectory.push(`[${page.title}]: ${page.name}.html\n`);
+      if (page.title &&
+        !(page.title.includes('[') || page.title.includes(']'))) {
+        urlDirectory.push(`[${page.title}]: ${page.name}.html\n`);
+      }
       if (page.fm.name) urlDirectory.push(`[${page.fm.name}]: ${page.name}.html\n`);
     }
   });
@@ -91,7 +94,7 @@ function loadPages(path) {
     var pageDirectory = `\n\n`;
     if (repage.missing) {
       repage.missing.forEach(missing => {
-        pageDirectory += urlDirectory.filter(ud => ud.indexOf(missing) !== -1).join(`\n`);
+        pageDirectory += urlDirectory.filter(ud => ud.indexOf(`[${missing}]`) !== -1).join(`\n`);
         if (pageDirectory[pageDirectory.length-1] !== `\n`) pageDirectory += `\n`;
       });
     }
