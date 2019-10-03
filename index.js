@@ -60,29 +60,6 @@ function loadPages(path) {
     pages.push(page);
   });
   
-  var urlDirectory = [];
-  // make url directory
-  pages.forEach(page => {
-    urlDirectory.push(`[${page.name}]: ${page.name}.html`);
-    if (page.fm) {
-      if (page.fm.title) urlDirectory.push(`[${page.fm.title}]: ${page.name}.html\n`);
-      if (page.fm.name) urlDirectory.push(`[${page.fm.name}]: ${page.name}.html\n`);
-    }
-  });
-
-  // use url directory to re-parse
-  pages.forEach((page, i, array) => {
-    var pageDirectory = `\n\n`;
-    if (page.missing) {
-      page.missing.forEach(missing => {
-        pageDirectory += urlDirectory.filter(ud => ud.indexOf(missing) !== -1).join(`\n`);
-        if (pageDirectory[pageDirectory.length-1] !== `\n`) pageDirectory += `\n`;
-      });
-    }
-    array[i].tokens = md.parse(page.raw + pageDirectory, {});
-    array[i].html = md.renderer.render(array[i].tokens, {})
-  });
-  
   // populate title from h1, TODO make optional
   pages.forEach((page) => {
     if (page.title) return;
@@ -97,6 +74,31 @@ function loadPages(path) {
       if (token.tag === "h1") nextToken = true;
     }
     
+  });
+  
+  var urlDirectory = [];
+  // make url directory
+  pages.forEach(page => {
+    urlDirectory.push(`[${page.name}]: ${page.name}.html`);
+    if (page.fm) {
+      if (page.title) urlDirectory.push(`[${page.title}]: ${page.name}.html\n`);
+      if (page.fm.name) urlDirectory.push(`[${page.fm.name}]: ${page.name}.html\n`);
+    }
+  });
+
+  // use url directory to re-parse
+  pages.forEach((repage, i, array) => {
+    var pageDirectory = `\n\n`;
+    if (repage.missing) {
+      repage.missing.forEach(missing => {
+        pageDirectory += urlDirectory.filter(ud => ud.indexOf(missing) !== -1).join(`\n`);
+        if (pageDirectory[pageDirectory.length-1] !== `\n`) pageDirectory += `\n`;
+      });
+    }
+    array[i].tokens = md.parse(repage.raw + pageDirectory, {});
+    array[i].html = md.renderer.render(array[i].tokens, {});
+    array[i].missing = page.missing;
+    page.missing = [];
   });
 }
 
