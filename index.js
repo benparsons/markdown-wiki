@@ -88,6 +88,16 @@ function loadPages(path) {
       if (page.fm.name) urlDirectory.push(`[${page.fm.name}]: ${page.name}.html\n`);
     }
   });
+  // append redirects to url directory
+  pages.filter(p=>p.fm&&p.fm.redirect).forEach(redirectPage => {
+    const destination = pages.find(p => p.title === redirectPage.fm.redirect);
+    if (destination) {
+      urlDirectory.push(`[${redirectPage.name}]: ${destination.name}.html`);
+      if (redirectPage.title && !(   redirectPage.title.includes('[') || redirectPage.title.includes(']')   )) {
+        urlDirectory.push(`[${redirectPage.title}]: ${destination.name}.html`);
+      }
+    }
+  });
 
   // use url directory to re-parse
   pages.forEach((repage, i, array) => {
