@@ -107,7 +107,7 @@ function loadPages(path) {
     var pageDirectory = `\n\n`;
     if (repage.missing) {
       repage.missing.forEach(missing => {
-        pageDirectory += urlDirectory.filter(ud => ud.indexOf(`[${missing}]`) !== -1).join(`\n`);
+        pageDirectory += urlDirectory.filter(ud => ud.toLowerCase().indexOf(`[${missing.toLowerCase()}]`) !== -1).join(`\n`);
         if (pageDirectory[pageDirectory.length-1] !== `\n`) pageDirectory += `\n`;
       });
     }
