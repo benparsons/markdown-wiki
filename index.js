@@ -130,6 +130,8 @@ function renderPages() {
 
 function loadTags() {
   // create tags array
+  tags = {};
+  
   pages.forEach(page => {
     if (page.fm && page.fm.tags) {
       page.fm.tags.forEach(pageTag => {
