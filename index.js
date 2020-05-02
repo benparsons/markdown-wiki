@@ -82,22 +82,22 @@ function loadPages(path) {
     if (page.fm && page.fm.redirect) {
       return;
     }
-    urlDirectory.push(`[${page.name}]: ${page.name}.html`);
+    urlDirectory.push(`[${page.name}]: ${page.name}`);
     if (page.fm) {
       if (page.title &&
         !(page.title.includes('[') || page.title.includes(']'))) {
-        urlDirectory.push(`[${page.title}]: ${page.name}.html\n`);
+        urlDirectory.push(`[${page.title}]: ${page.name}\n`);
       }
-      if (page.fm.name) urlDirectory.push(`[${page.fm.name}]: ${page.name}.html\n`);
+      if (page.fm.name) urlDirectory.push(`[${page.fm.name}]: ${page.name}\n`);
     }
   });
   // append redirects to url directory
   pages.filter(p=>p.fm&&p.fm.redirect).forEach(redirectPage => {
     const destination = pages.find(p => p.title === redirectPage.fm.redirect);
     if (destination) {
-      urlDirectory.push(`[${redirectPage.name}]: ${destination.name}.html`);
+      urlDirectory.push(`[${redirectPage.name}]: ${destination.name}`);
       if (redirectPage.title && !(   redirectPage.title.includes('[') || redirectPage.title.includes(']')   )) {
-        urlDirectory.push(`[${redirectPage.title}]: ${destination.name}.html`);
+        urlDirectory.push(`[${redirectPage.title}]: ${destination.name}`);
       }
     }
   });
