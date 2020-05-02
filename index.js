@@ -9,6 +9,7 @@ md.use(require('markdown-it-missing-refs'), function(missing) {
 var fs = require('fs');
 var yaml = require('js-yaml');
 
+var preCached = [];
 // adapted from https://stackoverflow.com/a/16684530/384316
 var walk = function(dir) {
   var results = [];
@@ -22,7 +23,13 @@ var walk = function(dir) {
           results = results.concat(walk(file));
       } else { 
           /* Is a file */
-          if (file.endsWith('.md')) results.push(file);
+          if (file.endsWith('.md')) {
+            if (pagesCacheMTimeMs && stat.mtimeMs < pagesCacheMTimeMs) {
+              preCached.push(file);
+            } else {
+              results.push(file);
+            }
+          }
       }
   });
   return results;
@@ -32,12 +39,24 @@ var page = {};
 var pages = [];
 var projects = {};
 var tags = {};
+var pagesCache = {};
+var pagesCacheMTimeMs;
+try {
+  var pagesCacheText = fs.readFileSync(".cache/pagesCache.json", 'utf-8');
+  pagesCache = JSON.parse(pagesCacheText);
+  pagesCacheMTimeMs = fs.statSync(".cache/pagesCache.json").mtimeMs;
+} catch(ex) {
+  console.log("pagesCache not loaded");
+}
+
 
 function loadPages(path) {
+  pages = [];
 
   if (! path) path = ".";
   var res = walk(path);
-  pages = [];
+
+  var hrpagesinstart = process.hrtime()
   res.forEach((file) => {
     page = {};
     
@@ -59,7 +78,11 @@ function loadPages(path) {
     // }
     pages.push(page);
   });
-  
+
+  var hrpagesinend = process.hrtime(hrpagesinstart)
+  console.info('Pages in (hr): %ds %dms', hrpagesinend[0], hrpagesinend[1] / 1000000)
+
+  var hrtitlestart = process.hrtime()
   // populate title from h1, TODO make optional
   pages.forEach((page) => {
     if (page.title) return;
@@ -75,8 +98,18 @@ function loadPages(path) {
     }
     
   });
-  
+  var hrtitleend = process.hrtime(hrtitlestart)
+  console.info('Title (hr): %ds %dms', hrtitleend[0], hrtitleend[1] / 1000000)
+
+  var hrurldirstart = process.hrtime()
   var urlDirectory = [];
+  try {
+    var urlDirectoryText = fs.readFileSync(".cache/urlDirectory.txt", 'utf-8');
+    urlDirectory = urlDirectoryText.split('\n');
+  } catch(ex) {
+    console.log("pagesCache not loaded");
+  }
+
   // make url directory
   pages.forEach(page => {
     if (page.fm && page.fm.redirect) {
@@ -101,13 +134,17 @@ function loadPages(path) {
       }
     }
   });
+  fs.writeFileSync(".cache/urlDirectory.txt", urlDirectory.join('\n'));
+  var hrurldirend = process.hrtime(hrurldirstart)
+  console.info('Url dir (hr): %ds %dms', hrurldirend[0], hrurldirend[1] / 1000000)
 
+  var hrreparsestart = process.hrtime()
   // use url directory to re-parse
   pages.forEach((repage, i, array) => {
     var pageDirectory = `\n\n`;
     if (repage.missing) {
       repage.missing.forEach(missing => {
-        pageDirectory += urlDirectory.filter(ud => ud.toLowerCase().indexOf(`[${missing.toLowerCase()}]`) !== -1).join(`\n`);
+        pageDirectory += urlDirectory.filter(ud => ud.toLowerCase().includes(`[${missing.toLowerCase()}]`)).join(`\n`);
         if (pageDirectory[pageDirectory.length-1] !== `\n`) pageDirectory += `\n`;
       });
     }
@@ -115,7 +152,20 @@ function loadPages(path) {
     array[i].html = md.renderer.render(array[i].tokens, {});
     array[i].missing = page.missing;
     page.missing = [];
+    pagesCache[repage.path] = array[i];
   });
+  var hrreparseend = process.hrtime(hrreparsestart)
+  console.info('reparse (hr): %ds %dms', hrreparseend[0], hrreparseend[1] / 1000000)
+
+  var hrprecachestart = process.hrtime()
+  preCached.forEach(file => {
+    pages.push(pagesCache[file]);
+  });
+  var hrprecacheend = process.hrtime(hrprecachestart)
+  console.info('precache fill (hr): %ds %dms', hrprecacheend[0], hrprecacheend[1] / 1000000)
+
+
+  fs.writeFileSync(".cache/pagesCache.json", JSON.stringify(pagesCache));
 }
 
 function renderPages() {
@@ -151,7 +201,7 @@ function loadProjects() {
   projects = {};
 
   if (! pages || pages.length === 0) {
-    console.log("Pages not loaded.");
+    console.log(`Pages not loaded. ${pages.length}`);
     return;
   }
 
