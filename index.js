@@ -183,7 +183,7 @@ function loadTags() {
   tags = {};
   
   pages.forEach(page => {
-    if (page.fm && page.fm.tags) {
+    if (page.fm && page.fm.tags && typeof(page.fm.tags) === 'object') {
       page.fm.tags.forEach(pageTag => {
         if (! tags[pageTag]) {
           tags[pageTag] = [];
