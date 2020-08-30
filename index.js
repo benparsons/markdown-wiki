@@ -25,9 +25,12 @@ var walk = function(dir) {
           /* Is a file */
           if (file.endsWith('.md')) {
             if (pagesCacheMTimeMs && stat.mtimeMs < pagesCacheMTimeMs) {
-              preCached.push(file);
+              if (preCached.indexOf(file) === -1) {
+                preCached.push(file);
+              }
             } else {
               results.push(file);
+              preCached.splice(preCached.indexOf(file), 1);
             }
           }
       }
