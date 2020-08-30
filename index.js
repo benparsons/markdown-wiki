@@ -52,7 +52,7 @@ try {
 
 function loadPages(path) {
   pages = [];
-  preCached = [];
+  //preCached = [];
 
   if (! path) path = ".";
   var res = walk(path);
