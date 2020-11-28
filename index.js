@@ -239,12 +239,26 @@ function getWiki() {
 
 function writeFrontMatter(name, json) {
   var entry = pages.find(x => x.name === name);
-  var frontMatter = yaml.dump(json, {noArrayIndent: true});
+  var frontMatter = yaml.dump(json); //, {noArrayIndent: true}
   frontMatter = frontMatter.replace(/(date: \d\d\d\d-\d\d-\d\d).*/, "$1");
   console.log(frontMatter);
   var output = entry.raw.replace(/---(.|[\r\n])*---/, `---\n${frontMatter}---`);
   process.chdir(__dirname + "/../..");
   fs.writeFileSync(entry.path, output);
+}
+
+function createPage(title, category, frontMatter, body, fullPath) {
+  frontMatter = yaml.dump(frontMatter); 
+  let output = `---\n${frontMatter}---\n\n# ${title}\n\n${body}`;
+  process.chdir(__dirname + "/../..");
+  let path = (fullPath ? fullPath : category) + "/" + getFilenameFromTitle(title);
+  fs.writeFileSync(path, output)
+}
+
+function getFilenameFromTitle(title) {
+  return title.toLowerCase()
+      .replace(/[ \/:]/g, '-')
+      .replace(/[,\?\$\']/g, '') + ".md";
 }
 
 module.exports = {
@@ -254,5 +268,7 @@ module.exports = {
   getPages: getPages,
   loadProjects: loadProjects,
   getWiki, getWiki,
-  writeFrontMatter: writeFrontMatter
+  writeFrontMatter: writeFrontMatter,
+  createPage: createPage,
+  getFilenameFromTitle: getFilenameFromTitle
 };
