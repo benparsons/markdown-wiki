@@ -194,7 +194,8 @@ function loadTags() {
         }
         tags[pageTag].push({
           name: page.name,
-          title: page.title
+          title: page.title,
+          task: page.fm.task
         });
       });
     }
