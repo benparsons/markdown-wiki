@@ -15,6 +15,8 @@ const md = markdownit()
 import fs from 'fs';
 
 const rootPath = process.argv[2];
+process.chdir(rootPath);
+
 const entry = {};
 entry.path = process.argv[3];
 
@@ -35,11 +37,9 @@ var walk = function(dir) {
     });
     return results;
 }
-const allFiles = walk(rootPath);
+const allFiles = walk(".");
 
-console.log(rootPath + " || " + entry.path);
-
-entry.contents = fs.readFileSync(rootPath + "/" + entry.path, "utf-8");
+entry.contents = fs.readFileSync(entry.path, "utf-8");
 
 console.log(entry.contents);
 
@@ -50,7 +50,7 @@ console.log(entry.fm);
 
 
 for (const filePath of allFiles) {
-    const candidate = fs.readFileSync(rootPath + "/" + filePath, "utf-8");
+    const candidate = fs.readFileSync(filePath, "utf-8");
 
     for (const key in entry.missing) {
         if (candidate.match(new RegExp(`^# ${entry.missing[key].linkText}.*`, "gm"))) {
